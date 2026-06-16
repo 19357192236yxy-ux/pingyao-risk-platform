@@ -6,8 +6,6 @@ import streamlit as st
 import plotly.graph_objects as go
 
 st.set_page_config(page_title="平遥古城气候风险量化评估平台 V1.2", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Arial Unicode MS"]
-plt.rcParams["axes.unicode_minus"] = False
 
 st.markdown("""
 <style>
