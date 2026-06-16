@@ -3,7 +3,7 @@ import io
 import numpy as np
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="平遥古城气候风险量化评估平台 V1.2", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Arial Unicode MS"]
@@ -109,13 +109,46 @@ def make_result_excel(results_df, climate_df=None, subrisk_df=None):
     output.seek(0); return output
 
 def plot_bar(chart_df):
-    fig, ax = plt.subplots(figsize=(8,4.6)); ax.bar(chart_df["维度"], chart_df["指数值"]); ax.set_ylim(0,1); ax.set_ylabel("指数值"); ax.set_title("平遥古城气候风险结构"); plt.xticks(rotation=20, ha="right"); plt.tight_layout(); return fig
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=chart_df["维度"],
+        y=chart_df["指数值"],
+        text=[f"{v:.3f}" for v in chart_df["指数值"]],
+        textposition="outside"
+    ))
+    fig.update_layout(
+        title="平遥古城气候风险结构",
+        yaxis_title="指数值",
+        xaxis_title="风险成分",
+        yaxis=dict(range=[0, 1]),
+        height=430,
+        margin=dict(l=40, r=30, t=70, b=80),
+        font=dict(family="Microsoft YaHei, SimHei, Arial, sans-serif", size=14)
+    )
+    return fig
 
 def plot_radar(labels, values):
-    values, labels = list(values), list(labels); values += values[:1]
-    angles = np.linspace(0, 2*np.pi, len(labels), endpoint=False).tolist(); angles += angles[:1]
-    fig = plt.figure(figsize=(6,6)); ax = plt.subplot(111, polar=True)
-    ax.plot(angles, values, linewidth=2); ax.fill(angles, values, alpha=.15); ax.set_thetagrids(np.degrees(angles[:-1]), labels); ax.set_ylim(0,1); ax.set_title("H-E-V-AC 风险结构雷达图", pad=20); return fig
+    labels = list(labels)
+    values = list(values)
+    labels_closed = labels + labels[:1]
+    values_closed = values + values[:1]
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=values_closed,
+        theta=labels_closed,
+        fill="toself",
+        mode="lines+markers",
+        name="风险结构"
+    ))
+    fig.update_layout(
+        title="H-E-V-AC 风险结构雷达图",
+        polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+        showlegend=False,
+        height=520,
+        margin=dict(l=40, r=40, t=80, b=40),
+        font=dict(family="Microsoft YaHei, SimHei, Arial, sans-serif", size=14)
+    )
+    return fig
 
 def generate_diagnosis(result):
     H,E,V,AC,R,level = result["H 气候危险性"],result["E 暴露度"],result["V 脆弱性"],result["AC 适应力"],result["R 综合气候风险"],result["风险等级"]
